@@ -1,0 +1,14 @@
+.arena {
+    display: flex;
+    background: #7da85b;
+    width: 700px;
+    height: 400px;
+    padding: 0 50px;
+    justify-content: space-between;
+    border-radius: 10px;
+    border: 5px solid #1a3b00;
+}
+
+.player-container {
+    display: flex;
+}
