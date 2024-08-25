@@ -1,20 +1,17 @@
-import './Switch.css'
-import {ChangeEventHandler, FC, useState} from "react";
+import {ChangeEventHandler, FC} from "react";
+import './Switch.css';
 
 export interface SwitchProps {
-    label: string
-    value?: number
-    onChange?: (value: number) => void
+    label: string;
+    value?: number;
+    onChange?: (value: number) => void;
 }
 
-export const Switch: FC<SwitchProps> = ({label, value, onChange = () => {}}) => {
-
-    const [switchValue, setSwitchValue] = useState<number>(value || 1)
+export const Switch: FC<SwitchProps> = ({label, value = 50, onChange = () => {}}) => {
 
     const changeValue: ChangeEventHandler<HTMLInputElement> = (event) => {
-        setSwitchValue(Number(event.target.value))
-        onChange(Number(event.target.value))
-    }
+        onChange(Number(event.target.value));
+    };
 
     return (
         <div className="switch">
@@ -22,8 +19,9 @@ export const Switch: FC<SwitchProps> = ({label, value, onChange = () => {}}) => 
                 {label}
             </div>
             <div className={'switch-section'}>
-                <input type={'range'} min={0.1} max={10} step={0.1} defaultValue={switchValue} onChange={changeValue} list={'switch-section'}/>
+                <input type={'range'} min={1} max={100} step={1} defaultValue={value} onChange={changeValue}
+                       list={'switch-section'}/>
             </div>
         </div>
-    )
-}
+    );
+};

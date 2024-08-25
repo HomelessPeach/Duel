@@ -4,11 +4,30 @@
     flex-direction: column;
     gap: 7px;
     user-select: none;
+    width: 170px;
+    @media (max-width: 800px) {
+        width: 127px;
+    }
+    @media (max-width: 600px) {
+        width: 85px;
+    }
+    @media (max-width: 360px) {
+        width: 68px;
+    }
 }
 
 .switch-label {
     font-size: 15px;
     color: #171717;
+    @media (max-width: 800px) {
+        font-size: 13px;
+    }
+    @media (max-width: 600px) {
+        font-size: 12px;
+    }
+    @media (max-width: 360px) {
+        font-size: 10px;
+    }
 }
 
 .switch-section {
