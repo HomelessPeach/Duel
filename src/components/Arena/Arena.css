@@ -1,14 +1,28 @@
 .arena {
     display: flex;
+    justify-content: space-between;
     background: #7da85b;
+    position: relative;
     width: 700px;
     height: 400px;
-    padding: 0 50px;
-    justify-content: space-between;
-    border-radius: 10px;
     border: 5px solid #1a3b00;
-}
-
-.player-container {
-    display: flex;
+    border-radius: 10px;
+    @media (max-width: 800px) {
+        width: 525px;
+        height: 300px;
+        border: 3px solid #1a3b00;
+        border-radius: 7px;
+    }
+    @media (max-width: 600px) {
+        width: 350px;
+        height: 200px;
+        border: 2px solid #1a3b00;
+        border-radius: 5px;
+    }
+    @media (max-width: 360px) {
+        width: 280px;
+        height: 160px;
+        border: 2px solid #1a3b00;
+        border-radius: 3px;
+    }
 }
