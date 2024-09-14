@@ -70,16 +70,14 @@ const defaultArenaPlayer2State: ArenaPlayerState = {
 export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, onChangeScorePlayer1}) => {
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [mousePosition, setMousePosition] = useState<MousePositionState>({x: 0, y: 0});
     const [arenaPlayer1, setArenaPlayer1] = useState<ArenaPlayerState>(defaultArenaPlayer1State);
     const [arenaPlayer2, setArenaPlayer2] = useState<ArenaPlayerState>(defaultArenaPlayer2State);
-    const [mousePosition, setMousePosition] = useState<MousePositionState>({x: 0, y: 0});
     const [magicFires, setMagicFires] = useState<MagicFireState[]>([]);
 
     const getCanvasContext = () => {
         const canvasContext: CanvasRenderingContext2D | null | undefined = canvasRef.current?.getContext('2d');
-        if (canvasContext) {
-            canvasContext.clearRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
-        }
+        canvasContext?.clearRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
         return canvasContext;
     };
 
@@ -124,11 +122,11 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
         }
 
         if (arenaPlayer.direction === 'down') {
-            setArenaPlayer({
-                ...arenaPlayer,
-                direction: (arenaPlayer.positionY - speed >= canvasSize.positionY.bottom) ? 'up' : 'down',
-                positionY: arenaPlayer.positionY + speed
-            });
+            setArenaPlayer((arenaPlayerData) => ({
+                ...arenaPlayerData,
+                direction: (arenaPlayerData.positionY - speed >= canvasSize.positionY.bottom) ? 'up' : 'down',
+                positionY: arenaPlayerData.positionY + speed
+            }));
             return;
         }
 
@@ -165,7 +163,7 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
                 endPoint: (arenaPlayer.positionX === canvasSize.positionX.right) ? 'left' : 'right',
                 color: arenaPlayer.color,
                 onChangeScore: onChangeScore
-            }])
+            }]);
             setArenaPlayer((arenaPlayerData) => ({...arenaPlayerData, shootTimeOut: 1000}));
         } else {
             setArenaPlayer((arenaPlayerData) => ({
@@ -183,11 +181,6 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
             canvasContext.arc(shoot.x, shoot.y, 20, 0, 3 * Math.PI);
             canvasContext.fillStyle = shoot.color;
             canvasContext.fill();
-            if (shoot.endPoint === 'left') {
-                shoot.x = shoot.x - 1;
-            } else {
-                shoot.x = shoot.x + 1;
-            }
             handleShoot(shoot);
         });
     };
@@ -198,48 +191,47 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
         if (shoot.endPoint === 'right' &&
             ((shoot.x - playerRight.positionX) ** 2 + (shoot.y - playerRight.positionY) ** 2) ** 0.5 < 70
         ) {
-            shoot.onChangeScore(((playerRight === arenaPlayer2)? player1 : player2).score + 1)
+            shoot.onChangeScore(((playerRight === arenaPlayer2) ? player1 : player2).score + 1);
             return;
         }
 
         if (shoot.endPoint === 'left' &&
             ((shoot.x - playerLeft.positionX) ** 2 + (shoot.y - playerLeft.positionY) ** 2) ** 0.5 < 70
         ) {
-            shoot.onChangeScore(((playerLeft === arenaPlayer2)? player1 : player2).score + 1)
+            shoot.onChangeScore(((playerLeft === arenaPlayer2) ? player1 : player2).score + 1);
             return;
         }
 
         if ((shoot.endPoint === 'right' && (shoot.x - 20) < canvasSize.width) ||
             (shoot.endPoint === 'left' && (shoot.x + 20) > 0)
         ) {
-            setMagicFires((magicFires) => [...magicFires, shoot])
+            setMagicFires((magicFires) => [...magicFires, {
+                ...shoot,
+                x: shoot.x + ((shoot.endPoint === 'right') ? 1 : -1)
+            }]);
             return;
         }
     };
 
     const handleMouseMove = (event: MouseEvent<HTMLCanvasElement>) => {
         const rect: DOMRect = event.currentTarget.getBoundingClientRect();
-        if (rect) {
-            setMousePosition({
-                x: (event.clientX - rect.left) * canvasSize.width / rect.width + 1,
-                y: (event.clientY - rect.top) * canvasSize.height / rect.height + 1
-            });
-        }
+        setMousePosition({
+            x: (event.clientX - rect.left) * canvasSize.width / rect.width + 1,
+            y: (event.clientY - rect.top) * canvasSize.height / rect.height + 1
+        });
     };
 
-    const handleClick = (event: any) => {
+    const handleClick = (event: MouseEvent<HTMLCanvasElement>) => {
         const rect: DOMRect = event.currentTarget.getBoundingClientRect();
-        if (rect) {
-            const x: number = (event.clientX - rect.left) * canvasSize.width / rect.width + 1;
-            const y: number = (event.clientY - rect.top) * canvasSize.height / rect.height + 1;
-            if (((arenaPlayer1.positionX - x) ** 2 + (arenaPlayer1.positionY - y) ** 2) ** 0.5 < 51) {
-                setArenaPlayer1((arenaPlayer) => ({...arenaPlayer, isOpenPlayerSettings: true}));
-                return;
-            }
-            if (((arenaPlayer2.positionX - x) ** 2 + (arenaPlayer2.positionY - y) ** 2) ** 0.5 < 51) {
-                setArenaPlayer2((arenaPlayer) => ({...arenaPlayer, isOpenPlayerSettings: true}));
-                return;
-            }
+        const x: number = (event.clientX - rect.left) * canvasSize.width / rect.width + 1;
+        const y: number = (event.clientY - rect.top) * canvasSize.height / rect.height + 1;
+        if (((arenaPlayer1.positionX - x) ** 2 + (arenaPlayer1.positionY - y) ** 2) ** 0.5 < 51) {
+            setArenaPlayer1((arenaPlayer) => ({...arenaPlayer, isOpenPlayerSettings: true}));
+            return;
+        }
+        if (((arenaPlayer2.positionX - x) ** 2 + (arenaPlayer2.positionY - y) ** 2) ** 0.5 < 51) {
+            setArenaPlayer2((arenaPlayer) => ({...arenaPlayer, isOpenPlayerSettings: true}));
+            return;
         }
     };
 
@@ -270,15 +262,20 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
             <PlayerSettings state={arenaPlayer1.color}
                             setState={(color) => setArenaPlayer1((player) => ({...player, color: color}))}
                             isOpen={arenaPlayer1.isOpenPlayerSettings}
-                            setClose={() => setArenaPlayer1((arenaPlayer) => ({...arenaPlayer, isOpenPlayerSettings: false}))}
+                            setClose={() => setArenaPlayer1((arenaPlayer) => ({
+                                ...arenaPlayer,
+                                isOpenPlayerSettings: false
+                            }))}
             />
             <PlayerSettings state={arenaPlayer2.color}
                             setState={(color) => setArenaPlayer2((player) => ({...player, color: color}))}
                             isOpen={arenaPlayer2.isOpenPlayerSettings}
-                            setClose={() => setArenaPlayer2((arenaPlayer) => ({...arenaPlayer, isOpenPlayerSettings: false}))}
+                            setClose={() => setArenaPlayer2((arenaPlayer) => ({
+                                ...arenaPlayer,
+                                isOpenPlayerSettings: false
+                            }))}
             />
         </>
     );
-
 
 };
