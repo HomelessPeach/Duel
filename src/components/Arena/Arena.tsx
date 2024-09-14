@@ -176,9 +176,9 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
     };
 
     const handleShootsWays = (canvasContext: CanvasRenderingContext2D) => {
-        const arr: MagicFireState[] = [...magicFires];
+        const copyMagicFires: MagicFireState[] = [...magicFires];
         magicFires.length = 0;
-        arr.forEach((shoot: MagicFireState) => {
+        copyMagicFires.forEach((shoot: MagicFireState) => {
             canvasContext.beginPath();
             canvasContext.arc(shoot.x, shoot.y, 20, 0, 3 * Math.PI);
             canvasContext.fillStyle = shoot.color;
