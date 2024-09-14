@@ -209,12 +209,9 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
             return;
         }
 
-        if (shoot.endPoint === 'right' && shoot.x < canvasSize.width) {
-            setMagicFires((magicFires) => [...magicFires, shoot])
-            return;
-        }
-
-        if (shoot.endPoint === 'left' && shoot.x > 0) {
+        if ((shoot.endPoint === 'right' && shoot.x < canvasSize.width) ||
+            (shoot.endPoint === 'left' && shoot.x > 0)
+        ) {
             setMagicFires((magicFires) => [...magicFires, shoot])
             return;
         }
