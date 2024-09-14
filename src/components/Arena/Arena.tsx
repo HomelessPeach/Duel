@@ -16,6 +16,7 @@ interface ArenaPlayerState {
     color: string;
     direction: 'up' | 'down';
     shootTimeOut: number;
+    isOpenPlayerSettings: boolean;
 }
 
 interface MousePositionState {
@@ -24,11 +25,11 @@ interface MousePositionState {
 }
 
 interface MagicFireState {
-    x: number,
-    y: number,
-    endPoint: 'left' | 'right',
-    color: string,
-    onChangeScore: (score: number) => void
+    x: number;
+    y: number;
+    endPoint: 'left' | 'right';
+    color: string;
+    onChangeScore: (score: number) => void;
 }
 
 const canvasSize = {
@@ -54,6 +55,7 @@ const defaultArenaPlayer1State: ArenaPlayerState = {
     color: '#000000',
     direction: 'down',
     shootTimeOut: 0,
+    isOpenPlayerSettings: false,
 };
 
 const defaultArenaPlayer2State: ArenaPlayerState = {
@@ -62,18 +64,16 @@ const defaultArenaPlayer2State: ArenaPlayerState = {
     color: '#ffffff',
     direction: 'down',
     shootTimeOut: 0,
+    isOpenPlayerSettings: false,
 };
 
 export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, onChangeScorePlayer1}) => {
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [mousePosition, setMousePosition] = useState<MousePositionState>({x: 0, y: 0});
     const [arenaPlayer1, setArenaPlayer1] = useState<ArenaPlayerState>(defaultArenaPlayer1State);
     const [arenaPlayer2, setArenaPlayer2] = useState<ArenaPlayerState>(defaultArenaPlayer2State);
-    const [isOpenPlayer1Settings, setIsOpenPlayer1Settings] = useState<boolean>(false);
-    const [isOpenPlayer2Settings, setIsOpenPlayer2Settings] = useState<boolean>(false);
-    const [magicFires] = useState<MagicFireState[]>([]);
-    const [score] = useState<[number, number]>([player1.score, player2.score]);
+    const [mousePosition, setMousePosition] = useState<MousePositionState>({x: 0, y: 0});
+    const [magicFires, setMagicFires] = useState<MagicFireState[]>([]);
 
     const getCanvasContext = () => {
         const canvasContext: CanvasRenderingContext2D | null | undefined = canvasRef.current?.getContext('2d');
@@ -159,13 +159,13 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
         const fire: number = fireFactor ** (playerFire / 10);
 
         if (arenaPlayer.shootTimeOut <= 0) {
-            magicFires.push({
+            setMagicFires((magicFires) => [...magicFires, {
                 x: arenaPlayer.positionX,
                 y: arenaPlayer.positionY,
                 endPoint: (arenaPlayer.positionX === canvasSize.positionX.right) ? 'left' : 'right',
                 color: arenaPlayer.color,
                 onChangeScore: onChangeScore
-            });
+            }])
             setArenaPlayer((arenaPlayerData) => ({...arenaPlayerData, shootTimeOut: 1000}));
         } else {
             setArenaPlayer((arenaPlayerData) => ({
@@ -193,29 +193,30 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
     };
 
     const clearShoots = (shoot: MagicFireState) => {
-        const playerLeft: ArenaPlayerState = (arenaPlayer1.positionX === canvasSize.positionX.left) ? arenaPlayer1 : arenaPlayer2;
-        const playerRight: ArenaPlayerState = (arenaPlayer2.positionX === canvasSize.positionX.right) ? arenaPlayer2 : arenaPlayer1;
-        if (shoot.endPoint === 'left' &&
-            ((shoot.x - playerLeft.positionX) ** 2 + (shoot.y - playerLeft.positionY) ** 2) ** 0.5 < 70
-        ) {
-            score[0] = score[0] + 1;
-            shoot.onChangeScore(score[0]);
-            return;
-        }
+        const [playerLeft, playerRight] = (arenaPlayer1.positionX === canvasSize.positionX.left) ? [arenaPlayer1, arenaPlayer2] : [arenaPlayer2, arenaPlayer1];
 
         if (shoot.endPoint === 'right' &&
             ((shoot.x - playerRight.positionX) ** 2 + (shoot.y - playerRight.positionY) ** 2) ** 0.5 < 70
         ) {
-            score[1] = score[1] + 1;
-            shoot.onChangeScore(score[1]);
+            shoot.onChangeScore(((playerRight === arenaPlayer2)? player1 : player2).score + 1)
+            return;
+        }
+
+        if (shoot.endPoint === 'left' &&
+            ((shoot.x - playerLeft.positionX) ** 2 + (shoot.y - playerLeft.positionY) ** 2) ** 0.5 < 70
+        ) {
+            shoot.onChangeScore(((playerLeft === arenaPlayer2)? player1 : player2).score + 1)
+            return;
+        }
+
+        if (shoot.endPoint === 'right' && shoot.x < canvasSize.width) {
+            setMagicFires((magicFires) => [...magicFires, shoot])
             return;
         }
 
         if (shoot.endPoint === 'left' && shoot.x > 0) {
-            magicFires.push(shoot);
-        }
-        if (shoot.endPoint === 'right' && shoot.x < canvasSize.width) {
-            magicFires.push(shoot);
+            setMagicFires((magicFires) => [...magicFires, shoot])
+            return;
         }
     };
 
@@ -235,11 +236,11 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
             const x: number = (event.clientX - rect.left) * canvasSize.width / rect.width + 1;
             const y: number = (event.clientY - rect.top) * canvasSize.height / rect.height + 1;
             if (((arenaPlayer1.positionX - x) ** 2 + (arenaPlayer1.positionY - y) ** 2) ** 0.5 < 51) {
-                setIsOpenPlayer1Settings(true);
+                setArenaPlayer1((arenaPlayer) => ({...arenaPlayer, isOpenPlayerSettings: true}));
                 return;
             }
             if (((arenaPlayer2.positionX - x) ** 2 + (arenaPlayer2.positionY - y) ** 2) ** 0.5 < 51) {
-                setIsOpenPlayer2Settings(true);
+                setArenaPlayer2((arenaPlayer) => ({...arenaPlayer, isOpenPlayerSettings: true}));
                 return;
             }
         }
@@ -271,13 +272,13 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
             </div>
             <PlayerSettings state={arenaPlayer1.color}
                             setState={(color) => setArenaPlayer1((player) => ({...player, color: color}))}
-                            isOpen={isOpenPlayer1Settings}
-                            setClose={() => setIsOpenPlayer1Settings(false)}
+                            isOpen={arenaPlayer1.isOpenPlayerSettings}
+                            setClose={() => setArenaPlayer1((arenaPlayer) => ({...arenaPlayer, isOpenPlayerSettings: false}))}
             />
             <PlayerSettings state={arenaPlayer2.color}
                             setState={(color) => setArenaPlayer2((player) => ({...player, color: color}))}
-                            isOpen={isOpenPlayer2Settings}
-                            setClose={() => setIsOpenPlayer2Settings(false)}
+                            isOpen={arenaPlayer2.isOpenPlayerSettings}
+                            setClose={() => setArenaPlayer2((arenaPlayer) => ({...arenaPlayer, isOpenPlayerSettings: false}))}
             />
         </>
     );

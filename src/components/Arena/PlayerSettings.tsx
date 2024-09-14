@@ -18,7 +18,6 @@ export const PlayerSettings: FC<PlayerSettingsProps> = ({state, setState, isOpen
 
     const handleApply = () => {
         setState(color);
-        setColor(state);
         setClose();
     };
 
