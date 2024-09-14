@@ -188,11 +188,11 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
             } else {
                 shoot.x = shoot.x + 1;
             }
-            clearShoots(shoot);
+            handleShoot(shoot);
         });
     };
 
-    const clearShoots = (shoot: MagicFireState) => {
+    const handleShoot = (shoot: MagicFireState) => {
         const [playerLeft, playerRight] = (arenaPlayer1.positionX === canvasSize.positionX.left) ? [arenaPlayer1, arenaPlayer2] : [arenaPlayer2, arenaPlayer1];
 
         if (shoot.endPoint === 'right' &&
