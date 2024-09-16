@@ -73,7 +73,7 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
     const [mousePosition, setMousePosition] = useState<MousePositionState>({x: 0, y: 0});
     const [arenaPlayer1, setArenaPlayer1] = useState<ArenaPlayerState>(defaultArenaPlayer1State);
     const [arenaPlayer2, setArenaPlayer2] = useState<ArenaPlayerState>(defaultArenaPlayer2State);
-    const [magicFires, setMagicFires] = useState<MagicFireState[]>([]);
+    const [magicFires] = useState<MagicFireState[]>([]);
 
     const getCanvasContext = () => {
         const canvasContext: CanvasRenderingContext2D | null | undefined = canvasRef.current?.getContext('2d');
@@ -157,13 +157,13 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
         const fire: number = fireFactor ** (playerFire / 10);
 
         if (arenaPlayer.shootTimeOut <= 0) {
-            setMagicFires((magicFires) => [...magicFires, {
+            magicFires.push({
                 x: arenaPlayer.positionX,
                 y: arenaPlayer.positionY,
                 endPoint: (arenaPlayer.positionX === canvasSize.positionX.right) ? 'left' : 'right',
                 color: arenaPlayer.color,
                 onChangeScore: onChangeScore
-            }]);
+            });
             setArenaPlayer((arenaPlayerData) => ({...arenaPlayerData, shootTimeOut: 1000}));
         } else {
             setArenaPlayer((arenaPlayerData) => ({
@@ -205,10 +205,10 @@ export const Arena: FC<ArenaProps> = ({player1, player2, onChangeScorePlayer2, o
         if ((shoot.endPoint === 'right' && (shoot.x - 20) < canvasSize.width) ||
             (shoot.endPoint === 'left' && (shoot.x + 20) > 0)
         ) {
-            setMagicFires((magicFires) => [...magicFires, {
+            magicFires.push({
                 ...shoot,
                 x: shoot.x + ((shoot.endPoint === 'right') ? 1 : -1)
-            }]);
+            });
             return;
         }
     };
